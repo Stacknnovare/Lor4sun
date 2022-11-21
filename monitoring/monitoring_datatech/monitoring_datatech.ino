@@ -143,8 +143,8 @@ void setup() {
 
   connection = false;
   while (connection == false) {
+    response = lorawan.set_JoinMode(SMW_SX1276M0_JOIN_MODE_OTAA);
     if(response == CommandResponse::OK){
-      response = lorawan.set_JoinMode(SMW_SX1276M0_JOIN_MODE_OTAA);
       blink_green();
       connection = !connection;
      
