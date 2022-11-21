@@ -11,10 +11,11 @@
 
 // BATERIA 
 #define A_BAT 13
+#define CONV_FACTOR 4.623
 int valorBat = 0;
 int valorReal = 0;
 int valorDC = 0;
-#define CONV_FACTOR 4.623;
+
 
 // LEDS
 #define LED_VERDE 27
@@ -111,13 +112,9 @@ void setup() {
   while (connection == false) {
     response = lorawan.get_DevEUI(deveui);
     if(response == CommandResponse::OK){
-      Serial.print(F("DevEUI: "));
-      Serial.write((uint8_t *)deveui, 16);
-      Serial.println();
       blink_green();
       connection = !connection;
     } else {
-      Serial.println(F("Error getting the Device EUI"));
       blinking_red();
   }
  }
@@ -126,13 +123,9 @@ void setup() {
   while (connection == false) {
     response = lorawan.set_AppEUI(APP_EUI);
     if(response == CommandResponse::OK){
-      Serial.print(F("Application EUI set ("));
-      Serial.write((uint8_t *)APP_EUI, 16);
-      Serial.println(')');
       blink_green();
       connection = !connection;
     } else {
-      Serial.println(F("Error setting the Application EUI"));
       blinking_red();
     }
   }
@@ -141,27 +134,21 @@ void setup() {
   while (connection == false) {
     response = lorawan.set_AppKey(APP_KEY);
     if(response == CommandResponse::OK){
-      Serial.print(F("Application Key set ("));
-      Serial.write((uint8_t *)APP_KEY, 32);
-      Serial.println(')');
       blink_green();
       connection = !connection;
     } else {
       blinking_red();
-      Serial.println(F("Error setting the Application Key"));
     }
   }
 
   connection = false;
   while (connection == false) {
     if(response == CommandResponse::OK){
-      Serial.println(F("Connection mode set to OTAA"));
       response = lorawan.set_JoinMode(SMW_SX1276M0_JOIN_MODE_OTAA);
       blink_green();
       connection = !connection;
      
     } else {
-      Serial.println(F("Error setting the join mode"));
       blinking_red();
       }
   }
@@ -192,7 +179,6 @@ void loop() {
 }
 void event_handler(Event type){
   if(type == Event::JOINED){
-    Serial.println(F("Joined"));
     blink_blue();
   }
 }
