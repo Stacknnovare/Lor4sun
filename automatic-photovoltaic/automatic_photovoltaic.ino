@@ -1,9 +1,9 @@
 #include "ESP32Servo.h"
 
-#define LDRDC 26
-#define LDRDB 27
-#define LDREC 14
-#define LDREB 12
+#define LDRDC 4
+#define LDRDB 26
+#define LDREC 2
+#define LDREB 14
 
 int LDC = 0;
 int LEC = 0;
@@ -15,18 +15,23 @@ int ValorSup = 0;
 int ValorInf = 0;
 int DifSupInf = 0;
 
-int ServoVertical = 90;     
+int ServoVertical = 0;     
 
-int LimiteServoVerticalMax = 120;    
-int LimiteServoVerticalMin = 15;     
+int LimiteServoVerticalMax = 180;    
+int LimiteServoVerticalMin = 0;     
 
-#define servo_pin 2
+#define servo_pin 15
 
 Servo Vertical;
 
 void setup()
 {
-  Vertical.attach(servo_pin);
+  ESP32PWM::allocateTimer(0);
+  ESP32PWM::allocateTimer(1);
+  ESP32PWM::allocateTimer(2);
+  ESP32PWM::allocateTimer(3);
+  Vertical.setPeriodHertz(50);
+  Vertical.attach(servo_pin, 1000, 2000);
   Serial.begin(115200);
   delay(3000);
 }
@@ -35,8 +40,7 @@ void loop() {
   LDC = analogRead(LDRDC);      
   LEC = analogRead(LDREC);
   LDB = analogRead(LDRDB);      
-  LEB = analogRead(LDREB);            
-
+  LEB = analogRead(LDREB);
   
   tol = 50;
 
@@ -48,12 +52,15 @@ void loop() {
   if (-1 * tol > DifSupInf || DifSupInf > tol)  {
     if (ValorSup > ValorInf)  {
       ServoVertical = ++ServoVertical;
+      delay(30);
       if (ServoVertical > LimiteServoVerticalMax)  {
         ServoVertical = LimiteServoVerticalMax;
       }
     }
+  
     else if (ValorSup < ValorInf)  {
       ServoVertical = --ServoVertical;
+      delay(30);
       if (ServoVertical < LimiteServoVerticalMin)  {
         ServoVertical = LimiteServoVerticalMin;
       }
