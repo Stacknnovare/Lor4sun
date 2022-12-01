@@ -47,13 +47,14 @@ int tol = 0;
 int ValorSup = 0;
 int ValorInf = 0;
 int DifSupInf = 0;
-
 int ServoVertical = 0;     
-
 int LimiteServoVerticalMax = 180;    
 int LimiteServoVerticalMin = 0;
 
 Servo Vertical;
+
+const unsigned long motorInterval = 1000;
+unsigned long motorTimer;
 
 HardwareSerial LoRaSerial(2);
 SMW_SX1276M0 lorawan(LoRaSerial);
@@ -66,6 +67,41 @@ unsigned long timeout;
 
 void event_handler(Event);
 
+// Placa automatica
+void motor() {
+  LDC = analogRead(LDRDC);      
+  LEC = analogRead(LDREC);
+  LDB = analogRead(LDRDB);      
+  LEB = analogRead(LDREB);
+  
+  tol = 50;
+
+  ValorSup = (LDC + LEC) / 2;   
+  ValorInf = (LDB + LEB) / 2;   
+
+  DifSupInf = ValorSup - ValorInf;      
+
+  if (-1 * tol > DifSupInf || DifSupInf > tol)  {
+    if (ValorSup > ValorInf)  {
+      ServoVertical = ++ServoVertical;
+      delay(30);
+      if (ServoVertical > LimiteServoVerticalMax)  {
+        ServoVertical = LimiteServoVerticalMax;
+      }
+    }
+  
+    else if (ValorSup < ValorInf)  {
+      ServoVertical = --ServoVertical;
+      delay(30);
+      if (ServoVertical < LimiteServoVerticalMin)  {
+        ServoVertical = LimiteServoVerticalMin;
+      }
+    }
+    Vertical.write(ServoVertical);
+  }
+  motorTimer = millis();
+}
+//Função Send Data
 void send_data(int Valor){
   DynamicJsonDocument json(JSON_OBJECT_SIZE(1));
 
@@ -143,6 +179,7 @@ void setup() {
   pinMode(LED_AZUL, OUTPUT);
   pinMode(LED_AMARELO, OUTPUT);
   pinMode(LED_BRANCO, OUTPUT);
+  motorTimer = millis();
 
   LoRaSerial.begin(115200, SERIAL_8N1, RXD2_DIN, TXD2_DOUT);
   lorawan.event_listener = &event_handler;
@@ -202,36 +239,12 @@ void setup() {
 }
 
 void loop() {
-  LDC = analogRead(LDRDC);      
-  LEC = analogRead(LDREC);
-  LDB = analogRead(LDRDB);      
-  LEB = analogRead(LDREB);
-  
-  tol = 50;
 
-  ValorSup = (LDC + LEC) / 2;   
-  ValorInf = (LDB + LEB) / 2;   
-
-  DifSupInf = ValorSup - ValorInf;      
-
-  if (-1 * tol > DifSupInf || DifSupInf > tol)  {
-    if (ValorSup > ValorInf)  {
-      ServoVertical = ++ServoVertical;
-      delay(30);
-      if (ServoVertical > LimiteServoVerticalMax)  {
-        ServoVertical = LimiteServoVerticalMax;
-      }
+  if ((millis() - motorTimer) >= motorInterval) {
+    motor();
+    motorTimer = millis();
     }
   
-    else if (ValorSup < ValorInf)  {
-      ServoVertical = --ServoVertical;
-      delay(30);
-      if (ServoVertical < LimiteServoVerticalMin)  {
-        ServoVertical = LimiteServoVerticalMin;
-      }
-    }
-    Vertical.write(ServoVertical);
-  }
   valorDC = check_battery();
     
   lorawan.listen();
