@@ -34,15 +34,6 @@ LoR4Sun is an open-source project developed as a Computer Engineering capstone (
 
 ---
 
-## 📸 Prototype Images
-
-![Prototype Diagram](path_to_prototype_image.png)
-![Dashboard Screenshot](path_to_dashboard_image.png)
-
-> Replace `path_to_*_image.png` with actual image paths
-
----
-
 ## 🚀 Getting Started
 
 ### Requirements
